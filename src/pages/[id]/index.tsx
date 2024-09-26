@@ -1,10 +1,18 @@
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import BoardWritePopup from "@/components/board/BoardWritePopup";
 
 export default function Index() {
   const params = useParams();
   const [writePopup, setWritePopup] = useState(false);
+
+  const dropPopupRef = useRef<HTMLDivElement | null>(null);
+
+  const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (dropPopupRef.current === e.target) {
+      setWritePopup(false);
+    }
+  };
 
   return (
     <div>
@@ -17,7 +25,11 @@ export default function Index() {
       >
         <div>+ 만들기</div>
       </button>
-      <BoardWritePopup show={writePopup} />
+      <BoardWritePopup
+        dropPopupRef={dropPopupRef}
+        show={writePopup}
+        handleClickOutside={handleClickOutside}
+      />
     </div>
   );
 }
