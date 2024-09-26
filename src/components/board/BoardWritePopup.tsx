@@ -2,17 +2,21 @@ import { ChangeEvent, useRef, useState, MutableRefObject } from "react";
 import { TbPhotoVideo } from "react-icons/tb";
 import Image from "next/image";
 
+// todo: 사이드바가 있으면 언제든 작성이 가능하기 때문에, 추후 [id]/index.ts가 아닌 사이드바에 추가할 것
 const BoardWritePopup = ({
   show,
   handleClickOutside,
   dropPopupRef,
 }: {
   show: boolean;
-  handleClickOutside: (e: React.MouseEvent<HTMLDivElement>) => void;
+  handleClickOutside: (
+    e: React.MouseEvent<HTMLDivElement>,
+    imageSrc: string
+  ) => void;
   dropPopupRef: MutableRefObject<HTMLDivElement | null>;
 }) => {
+  // todo: 드래그앤드롭 만들기
   const imgUploadRef = useRef<HTMLInputElement>(null);
-  // const dropPopupRef = useRef<HTMLDivElement | null>(null);
 
   const [imageSrc, setImageSrc] = useState("");
   const [step, setStep] = useState(0);
@@ -42,7 +46,7 @@ const BoardWritePopup = ({
           ? "h-screen w-full fixed left-0 top-0 flex justify-center items-center bg-black bg-opacity-50 text-center"
           : "hidden"
       }
-      onClick={(e) => handleClickOutside(e)}
+      onClick={(e) => handleClickOutside(e, imageSrc)}
     >
       {step === 0 && (
         <div className="w-1/3 bg-white rounded-md">
