@@ -6,7 +6,7 @@ import AlertPopup from "@/components/board/AlertPopup";
 export default function Index() {
   const params = useParams();
   const [writePopup, setWritePopup] = useState(false);
-  const [closeAlertPopup, setCloseAlertPopup] = useState(true);
+  const [closeAlertPopup, setCloseAlertPopup] = useState(false);
 
   const dropPopupRef = useRef<HTMLDivElement | null>(null);
   const dropPopupRef2 = useRef<HTMLDivElement | null>(null);
