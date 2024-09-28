@@ -4,11 +4,11 @@ interface ModalPortalProps {
   show: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
   children: ReactNode;
-  title: string;
-  clasName: string;
-  positive: ReactNode;
-  negative: ReactNode;
-  handleClickCond: () => void;
+  title?: string;
+  clasName?: string;
+  positive?: ReactNode;
+  negative?: ReactNode;
+  handleClickCond?: () => void;
 }
 
 const Modal = ({
@@ -25,8 +25,7 @@ const Modal = ({
 
   const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
     if (dropPopupRef.current === e.target) {
-      // todo: 팝업 닫힐 때 값 초기화
-      if (handleClickCond) handleClickCond(); // 사진을 하나라도 업로드한 경우
+      if (handleClickCond) handleClickCond();
       else setShow(false);
     }
   };
