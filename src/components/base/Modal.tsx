@@ -4,7 +4,7 @@ interface ModalPortalProps {
   show: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
   children: ReactNode;
-  title?: string;
+  title?: ReactNode;
   clasName?: string;
   positive?: ReactNode;
   negative?: ReactNode;
@@ -41,11 +41,7 @@ const Modal = ({
       onClick={(e) => handleClickOutside(e)}
     >
       <div className={`${clasName} w-1/4 bg-white rounded-md`}>
-        {title && (
-          <div className="border-b-2 p-3 font-bold">
-            <span>{title}</span>
-          </div>
-        )}
+        {title && <div className="border-b-2 p-3 font-bold">{title}</div>}
 
         <div>{children}</div>
 

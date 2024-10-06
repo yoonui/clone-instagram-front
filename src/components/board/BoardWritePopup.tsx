@@ -1,5 +1,5 @@
 import { ChangeEvent, useRef, useState, Dispatch, SetStateAction } from "react";
-import { TbPhotoVideo } from "react-icons/tb";
+import { TbPhotoVideo, TbArrowNarrowLeft } from "react-icons/tb";
 import Image from "next/image";
 import Modal from "../base/Modal";
 import AlertPopup from "@/components/board/AlertPopup";
@@ -58,7 +58,23 @@ const BoardWritePopup = ({
           handleClickCond(imageSrc);
         }}
         clasName="!w-1/3"
-        title="새 게시물 만들기"
+        title={
+          step > 0 ? (
+            <div className="flex content-between justify-between">
+              <button
+                onClick={() => {
+                  setStep(step - 1);
+                }}
+              >
+                <TbArrowNarrowLeft size={25} />
+              </button>
+              <div>새 게시물 만들기</div>
+              <button className="text-blue-400">다음</button>
+            </div>
+          ) : (
+            <>새 게시물 만들기</>
+          )
+        }
       >
         {step === 0 && (
           <>
