@@ -43,7 +43,8 @@ const Modal = ({
       <div className={`${clasName} w-1/4 bg-white rounded-md`}>
         {title && <div className="border-b-2 p-3 font-bold">{title}</div>}
 
-        <div>{children}</div>
+        {/* <div className="max-h-[600px] overflow-y-auto">{children}</div> */}
+        <div className="max-h-[600px] overflow-y-auto">{children}</div>
 
         <div className="flex flex-col">
           {positive && <button className="py-3 border-t">{positive}</button>}
