@@ -5,6 +5,7 @@ import {
   Dispatch,
   SetStateAction,
   useEffect,
+  useCallback,
 } from "react";
 import { TbPhotoVideo, TbArrowNarrowLeft } from "react-icons/tb";
 import Image from "next/image";
@@ -30,7 +31,7 @@ const BoardWritePopup = ({
   const imgUploadRef = useRef<HTMLInputElement>(null);
 
   const [imageSrc, setImageSrc] = useState("");
-  // const [cropImageSrc, setCropImageSrc] = useState("");
+  const [cropImageSrc, setCropImageSrc] = useState("");
   const [step, setStep] = useState(0);
 
   const [showAlertPopup, setShowAlertPopup] = useState(false);
@@ -95,102 +96,152 @@ const BoardWritePopup = ({
     setCrop(centerAspectCrop(width, height, 1));
   }
 
-  async function canvasPreview(
+  const canvasPreview = useCallback(
+    (
+      image: HTMLImageElement,
+      canvas: HTMLCanvasElement,
+      crop: PixelCrop,
+      scale = 1,
+      rotate = 0
+    ) => {
+      if (!image || !canvasRef || !completedCrop) {
+        throw new Error("Crop canvas does not exist");
+      }
+
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        throw new Error("No 2d context");
+      }
+
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+
+      // const offscreen = new OffscreenCanvas(
+      //   crop.width * scaleX,
+      //   crop.height * scaleY
+      // );
+      // const ctx = offscreen.getContext("2d");
+      // if (!ctx) {
+      //   throw new Error("No 2d context");
+      // }
+
+      const pixelRatio = window.devicePixelRatio;
+
+      canvas.width = Math.floor(crop.width * scaleX * pixelRatio);
+      canvas.height = Math.floor(crop.height * scaleY * pixelRatio);
+
+      ctx.scale(pixelRatio, pixelRatio);
+      ctx.imageSmoothingQuality = "high";
+
+      const cropX = crop.x * scaleX;
+      const cropY = crop.y * scaleY;
+
+      const rotateRads = (rotate * Math.PI) / 180;
+      const centerX = image.naturalWidth / 2;
+      const centerY = image.naturalHeight / 2;
+
+      ctx.save();
+
+      // 5) Move the crop origin to the canvas origin (0,0)
+      ctx.translate(-cropX, -cropY);
+      // 4) Move the origin to the center of the original position
+      ctx.translate(centerX, centerY);
+      // 3) Rotate around the origin
+      ctx.rotate(rotateRads);
+      // 2) Scale the image
+      ctx.scale(scale, scale);
+      // 1) Move the center of the image to the origin (0,0)
+      ctx.translate(-centerX, -centerY);
+      ctx.drawImage(
+        image,
+        0,
+        0,
+        image.naturalWidth,
+        image.naturalHeight,
+        0,
+        0,
+        image.naturalWidth,
+        image.naturalHeight
+      );
+
+      ctx.restore();
+
+      // const scaleX = image.naturalWidth / image.width;
+      // const scaleY = image.naturalHeight / image.height;
+
+      // const offscreen = new OffscreenCanvas(
+      //   image.naturalWidth,
+      //   image.naturalHeight
+      // );
+      // const ctx2 = offscreen.getContext("2d");
+      // if (!ctx2) {
+      //   throw new Error("No 2d context");
+      // }
+
+      // ctx.drawImage(
+      //   image,
+      //   0,
+      //   0,
+      //   image.naturalWidth,
+      //   image.naturalHeight,
+      //   0,
+      //   0,
+      //   image.naturalWidth,
+      //   image.naturalHeight
+      // );
+
+      // const t = ctx.toDataURL("image/jpg");
+      // const blob = await offscreen.convertToBlob();
+      // setCropImageSrc(URL.createObjectURL(blob));
+    },
+    [completedCrop]
+  );
+
+  async function canvasPreview22(
     image: HTMLImageElement,
     canvas: HTMLCanvasElement,
-    crop: PixelCrop,
-    scale = 1,
-    rotate = 0
+    crop: PixelCrop
   ) {
-    if (!image || !canvasRef || !completedCrop) {
+    if (!image || !canvas || !crop) {
       throw new Error("Crop canvas does not exist");
     }
 
-    const ctx = canvas.getContext("2d");
+    // This will size relative to the uploaded image
+    // size. If you want to size according to what they
+    // are looking at on screen, remove scaleX + scaleY
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
 
+    const offscreen = new OffscreenCanvas(
+      crop.width * scaleX,
+      crop.height * scaleY
+    );
+    const ctx = offscreen.getContext("2d");
     if (!ctx) {
       throw new Error("No 2d context");
     }
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    // const offscreen = new OffscreenCanvas(
-    //   crop.width * scaleX,
-    //   crop.height * scaleY
-    // );
-    // const ctx = offscreen.getContext("2d");
-    // if (!ctx) {
-    //   throw new Error("No 2d context");
-    // }
-
-    const pixelRatio = window.devicePixelRatio;
-
-    canvas.width = Math.floor(crop.width * scaleX * pixelRatio);
-    canvas.height = Math.floor(crop.height * scaleY * pixelRatio);
-
-    ctx.scale(pixelRatio, pixelRatio);
-    ctx.imageSmoothingQuality = "high";
-
-    const cropX = crop.x * scaleX;
-    const cropY = crop.y * scaleY;
-
-    const rotateRads = (rotate * Math.PI) / 180;
-    const centerX = image.naturalWidth / 2;
-    const centerY = image.naturalHeight / 2;
-
-    ctx.save();
-
-    // 5) Move the crop origin to the canvas origin (0,0)
-    ctx.translate(-cropX, -cropY);
-    // 4) Move the origin to the center of the original position
-    ctx.translate(centerX, centerY);
-    // 3) Rotate around the origin
-    ctx.rotate(rotateRads);
-    // 2) Scale the image
-    ctx.scale(scale, scale);
-    // 1) Move the center of the image to the origin (0,0)
-    ctx.translate(-centerX, -centerY);
     ctx.drawImage(
-      image,
+      canvas,
       0,
       0,
-      image.naturalWidth,
-      image.naturalHeight,
+      canvas.width,
+      canvas.height,
       0,
       0,
-      image.naturalWidth,
-      image.naturalHeight
+      offscreen.width,
+      offscreen.height
     );
+    // You might want { type: "image/jpeg", quality: <0 to 1> } to
+    // reduce image size
+    const blob = await offscreen.convertToBlob({
+      type: "image/jpg",
+    });
 
-    ctx.restore();
-
-    // const scaleX = image.naturalWidth / image.width;
-    // const scaleY = image.naturalHeight / image.height;
-
-    // const offscreen = new OffscreenCanvas(
-    //   crop.width * scaleX,
-    //   crop.height * scaleY
-    // );
-    // const ctx = offscreen.getContext("2d");
-    // if (!ctx) {
-    //   throw new Error("No 2d context");
-    // }
-
-    // ctx.drawImage(
-    //   image,
-    //   0,
-    //   0,
-    //   image.width,
-    //   image.height,
-    //   0,
-    //   0,
-    //   offscreen.width,
-    //   offscreen.height
-    // );
-
+    // const t = ctx.toDataURL("image/jpg");
     // const blob = await offscreen.convertToBlob();
-    // setCropImageSrc(URL.createObjectURL(blob));
+    setCropImageSrc(URL.createObjectURL(blob));
   }
 
   useEffect(() => {
@@ -203,7 +254,7 @@ const BoardWritePopup = ({
       // We use canvasPreview as it's much faster than imgPreview.
       canvasPreview(cropImgRef.current, canvasRef.current, completedCrop);
     }
-  }, [completedCrop]);
+  }, [canvasPreview, completedCrop]);
 
   return (
     <>
@@ -288,6 +339,25 @@ const BoardWritePopup = ({
                 height={500}
               />
             </ReactCrop>
+            <button
+              onClick={() => {
+                if (
+                  completedCrop?.width &&
+                  completedCrop?.height &&
+                  cropImgRef.current &&
+                  canvasRef.current
+                ) {
+                  // We use canvasPreview as it's much faster than imgPreview.
+                  canvasPreview22(
+                    cropImgRef.current,
+                    canvasRef.current,
+                    completedCrop
+                  );
+                }
+              }}
+            >
+              버튼
+            </button>
             <canvas
               ref={canvasRef}
               style={{
@@ -297,6 +367,13 @@ const BoardWritePopup = ({
                 height: "300px",
               }}
             />
+            {/* <Image
+              alt="Image Crop"
+              src={cropImageSrc}
+              onLoad={onImageLoad}
+              width={500}
+              height={500}
+            /> */}
           </>
         )}
 
@@ -312,13 +389,13 @@ const BoardWritePopup = ({
               }}
             /> */}
 
-            {/* <Image
+            <Image
               alt="Image Crop"
               src={cropImageSrc}
               onLoad={onImageLoad}
               width={500}
               height={500}
-            /> */}
+            />
           </>
         )}
       </Modal>
